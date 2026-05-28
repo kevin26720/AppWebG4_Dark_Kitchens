@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"  // PostgreSQL para desarrollo local y producción
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MODELOS DE DATOS PRINCIPALES
+// ============================================
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  messages  Message[]
+
+  @@index([email])
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  category    String
+  imageUrl    String?
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([available])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      String   @default("general")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([room])
+  @@index([createdAt])
+}
+
+// ============================================
+// MODELO PARA AUDITORÍA DE SEGURIDAD
+// ============================================
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String   // "LOGIN", "CREATE_PRODUCT", "DELETE_PRODUCT", etc.
+  resource  String   // "User", "Product", "Message"
+  details   String?  // JSON con detalles de la acción
+  ipAddress String?
+  status    String   // "SUCCESS", "FAILURE"
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
