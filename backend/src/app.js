@@ -23,9 +23,6 @@ const io = new Server(server, {
   transports: ['websocket', 'polling'],
 });
 
-// ============================================
-// MIDDLEWARES GLOBALES
-// ============================================
 
 // CORS
 app.use(cors({
@@ -45,12 +42,10 @@ if (config.nodeEnv === 'development') {
   });
 }
 
-// ============================================
-// RUTAS DE LA API
-// ============================================
+
 
 /**
- * Health check - Verificar estado del servidor
+ * Verificar estado del servidor
  */
 app.get('/health', (req, res) => {
   res.json({
@@ -86,23 +81,17 @@ app.use('/api/products', productRoutes);
 // Rutas de mensajes (REST fallback)
 app.use('/api/messages', messageRoutes);
 
-// ============================================
-// SOCKET.IO SETUP
-// ============================================
 
+// socket set up
 setupChatSocket(io);
 
-// ============================================
-// MANEJO DE ERRORES Y 404
-// ============================================
 
+// manejo de errores
 app.use(notFound);
 app.use(errorHandler);
 
-// ============================================
-// INICIAR SERVIDOR
-// ============================================
 
+// iniciar servidor
 const PORT = config.port;
 
 server.listen(PORT, () => {
@@ -116,7 +105,7 @@ server.listen(PORT, () => {
   `);
 });
 
-// Graceful shutdown
+// shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM recibido. Cerrando servidor gracefully...');
   server.close(() => {
